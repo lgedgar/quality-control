@@ -1,0 +1,42 @@
+
+@import './custom.scss';
+
+//////////////////////////////////////////////////
+// TODO: this section is for an implementation
+// of dark mode theme support; inspired by
+// https://blog.openreplay.com/implementing-dark-mode-with-bulma/
+//////////////////////////////////////////////////
+
+body {
+    min-height: 100vh;
+}
+
+body.dark {
+    background-color: $dark;
+    color: $light;
+}
+
+body.dark .label {
+    color: $light;
+}
+
+body.dark a:hover {
+    color: $light-invert;
+}
+
+body.dark .card {
+    background-color: $dark;
+    color: $light;
+}
+
+body.dark .card .card-header-title {
+    color: $light;
+}
+
+body.dark .card .label {
+    color: $light;
+}
+
+body.dark .card a:hover {
+    color: $light-invert;
+}

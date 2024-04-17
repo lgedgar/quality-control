@@ -1,0 +1,28 @@
+{
+  "name": "qordial-vue-skeleton",
+  "version": "0.0.0",
+  "description": "starting point for new Q-Apps built with qordial+Vue",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/vue-fontawesome": "^3.0.5",
+    "@oruga-ui/oruga-next": "^0.8.2",
+    "@oruga-ui/theme-bulma": "^0.2.11",
+    "pinia": "^2.1.7",
+    "qordial": "^0.1.6",
+    "vue": "~3.3.11",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.2",
+    "sass": "^1.70.0",
+    "vite": "^5.0.10"
+  }
+}
