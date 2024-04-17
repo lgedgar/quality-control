@@ -1,7 +1,7 @@
 {
-  "name": "qordial-vue-skeleton",
-  "version": "0.0.0",
-  "description": "starting point for new Q-Apps built with qordial+Vue",
+  "name": "quality-control",
+  "version": "0.1.0",
+  "description": "Application feedback manager for Qortal",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,19 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.5.1",
-    "@fortawesome/free-solid-svg-icons": "^6.5.1",
-    "@fortawesome/vue-fontawesome": "^3.0.5",
-    "@oruga-ui/oruga-next": "^0.8.2",
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "@fortawesome/vue-fontawesome": "^3.0.6",
+    "@oruga-ui/oruga-next": "^0.8.7",
     "@oruga-ui/theme-bulma": "^0.2.11",
     "pinia": "^2.1.7",
-    "qordial": "^0.1.6",
+    "qordial": "^0.1.8",
     "vue": "~3.3.11",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.5.2",
-    "sass": "^1.70.0",
-    "vite": "^5.0.10"
+    "@vitejs/plugin-vue": "^4.6.2",
+    "sass": "^1.75.0",
+    "vite": "^5.2.9"
   }
 }

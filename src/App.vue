@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { mapStores } from 'pinia'
 import {useQordialAuthStore} from 'qordial'
+import { useAppSettingsStore } from './stores/settings'
 import appsettings from './appsettings'
 </script>
 
@@ -17,6 +18,7 @@ export default {
 
     computed: {
         ...mapStores(useQordialAuthStore),
+        ...mapStores(useAppSettingsStore),
     },
 
     mounted() {
@@ -27,6 +29,10 @@ export default {
         // set dark mode if applicable
         if (window._qdnTheme == 'dark') {
             this.setDarkMode(true)
+        }
+
+        if (this.appSettingsStore.alwaysAuthenticate) {
+            this.$qordial.authenticate()
         }
     },
 
@@ -58,7 +64,7 @@ export default {
 
       <h1 class="is-size-1"
           style="flex-grow: 1;">
-        {{ appsettings.appTitle }}
+        <router-link to="/">{{ appsettings.appTitle }}</router-link>
       </h1>
 
       <a v-if="!darkMode"
@@ -78,13 +84,19 @@ export default {
     </div>
 
     <nav>
-      <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/about">About</RouterLink>
+      <router-link to="/">Home</router-link>
+      <router-link to="/tickets">Tickets</router-link>
+      <router-link to="/settings">Settings</router-link>
+      <router-link to="/about">About</router-link>
     </nav>
   </header>
 
   <div style="padding: 2rem;">
-    <RouterView />
+    <router-view v-slot="{Component}">
+      <keep-alive>
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
   </div>
 </template>
 
