@@ -80,6 +80,12 @@ export default {
   <div class="tickets">
     <h3 class="is-size-3 block">All Tickets</h3>
 
+    <o-button variant="primary"
+              icon-left="redo"
+              @click="refreshTickets()">
+      Refresh List
+    </o-button>
+
     <o-table :data="data || []"
              hoverable
              :loading="searching">

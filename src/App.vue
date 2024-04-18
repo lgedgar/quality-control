@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import { mapStores } from 'pinia'
-import {useQordialAuthStore} from 'qordial'
+import { useQordialAuthStore, AppFeedback } from 'qordial'
 import { useAppSettingsStore } from './stores/settings'
 import appsettings from './appsettings'
 </script>
@@ -75,6 +75,8 @@ export default {
          href="#" @click.prevent="setDarkMode(false)">
         <o-icon icon="sun" size="large" />
       </a>
+
+      <app-feedback :appname="appsettings.appTitle" />
 
       <o-button icon-left="user"
                 @click="authButtonClick">
