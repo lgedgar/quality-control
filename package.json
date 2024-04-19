@@ -16,7 +16,7 @@
     "@oruga-ui/oruga-next": "^0.8.2",
     "@oruga-ui/theme-bulma": "^0.2.11",
     "pinia": "^2.1.7",
-    "qordial": "^0.1.8",
+    "qordial": "^0.1.9",
     "vue": "~3.3.11",
     "vue-router": "^4.3.1"
   },
