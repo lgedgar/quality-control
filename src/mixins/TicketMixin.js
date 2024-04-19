@@ -3,6 +3,7 @@
 //
 // {
 //     "appname": "qwiki",
+//     "app_referrer": "/",
 //     "ticket_type": "comment",        <-- or "bug-report" or "feature-request"
 //     "first_submitted_by": "edbob",
 //     "first_submitted": 1713488031344,
@@ -38,8 +39,8 @@
 
 //     // nb. these refer to the current "master" resource for this
 //     // ticket (so they may differ from the *original* resource)
-//     "raw_name": "qwiki",
-//     "raw_identifier": "APPQCX_qwiki_123456",
+//     "qdn_name": "qwiki",
+//     "qdn_identifier": "APPQCX_qwiki_123456",
 //     "qdn_created": 1713488031344,
 //     "qdn_updated": 1713488031344,
 
@@ -56,7 +57,15 @@ let TicketMixin = {
             let style = {}
             let status = ticket.status
 
-            if (status == 'rejected') {
+            if (status == 'accepted') {
+                style['background-color'] = 'green'
+                style['color'] = 'white'
+
+            } else if (status == 'closed') {
+                style['background-color'] = 'gray'
+                style['color'] = 'white'
+
+            } else if (status == 'rejected') {
                 style['background-color'] = 'red'
             }
 
@@ -88,7 +97,9 @@ let TicketMixin = {
                 }
 
                 // use confirmed ticket as master if present; otherwise original
-                return confirmed || original
+                if (confirmed) {
+                    return confirmed
+                }
             }
 
             return original
@@ -130,8 +141,8 @@ let TicketMixin = {
             }
 
             // capture true "master" resource info
-            ticket.raw_name = name
-            ticket.raw_identifier = identifier
+            ticket.qdn_name = name
+            ticket.qdn_identifier = identifier
 
             return ticket
         },

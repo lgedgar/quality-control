@@ -43,7 +43,7 @@ export default {
         },
 
         ticketCellClick(ticket, column, index, colindex, event) {
-            this.$router.push(`/tickets/${ticket.raw_name}/${ticket.raw_identifier}`)
+            this.$router.push(`/tickets/${ticket.qdn_name}/${ticket.qdn_identifier}`)
         },
 
         async refreshTickets() {
@@ -109,8 +109,9 @@ export default {
 
     <o-button variant="primary"
               icon-left="redo"
-              @click="refreshTickets()">
-      Refresh List
+              @click="refreshTickets()"
+              :disabled="searching">
+      {{ searching ? "Working, please wait..." : "Refresh List" }}
     </o-button>
 
     <o-table :data="data || []"

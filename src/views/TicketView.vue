@@ -16,21 +16,116 @@ export default {
             identifier: null,
             ticket: null,
             loading: false,
+
+            accepting: false,
+            closing: false,
             rejecting: false,
+            reopening: false,
+
+            editShowDialog: false,
+            editSubject: null,
+            editDescription: null,
+            editSaving: false,
         }
     },
 
     computed: {
         ...mapStores(useQordialAuthStore),
 
-        allowAcceptReject() {
-            // app owner gets Accept/Reject buttons for unconfirmed tickets
-            if (this.ticket.status == 'unconfirmed') {
-                if (this.qordialAuthStore.username
-                    && this.qordialAuthStore.username == this.ticket.appname
-                    && this.qordialAuthStore.username != this.ticket.raw_name) {
-                    return true
-                }
+        canAcceptTicket() {
+            if (!this.qordialAuthStore.username) {
+                return false
+            }
+
+            // current user can accept IFF:
+            // - current user is app owner
+            // - ticket is unconfirmed
+            // - ticket is owned by a different user
+            if (this.ticket.status == 'unconfirmed'
+                && this.qordialAuthStore.username == this.ticket.appname
+                && this.qordialAuthStore.username != this.ticket.qdn_name) {
+                return true
+            }
+
+            return false
+        },
+
+        canEditTicket() {
+            if (!this.qordialAuthStore.username) {
+                return false
+            }
+
+            // current user can edit IFF:
+            // - ticket is owned by current user
+            if (this.qordialAuthStore.username == this.ticket.qdn_name) {
+                return true
+            }
+
+            return false
+        },
+
+        canCloseTicket() {
+            if (!this.qordialAuthStore.username) {
+                return false
+            }
+
+            // current user can close IFF:
+            // - ticket is open
+            // - ticket is owned by current user
+            if (['unconfirmed', 'accepted'].includes(this.ticket.status)
+                && this.qordialAuthStore.username == this.ticket.qdn_name) {
+                return true
+            }
+
+            return false
+        },
+
+        canRejectTicket() {
+            if (!this.qordialAuthStore.username) {
+                return false
+            }
+
+            // current user can reject IFF:
+            // - ticket is owned by current user
+            // - ticket is unconfirmed
+            if (this.ticket.status == 'unconfirmed'
+                && this.qordialAuthStore.username == this.ticket.qdn_name) {
+                return true
+            }
+
+            // current user can reject IFF:
+            // - current user is app owner
+            // - ticket is unconfirmed
+            if (this.ticket.status == 'unconfirmed'
+                && this.qordialAuthStore.username == this.ticket.appname) {
+                return true
+            }
+
+            return false
+        },
+
+        canReopenTicket() {
+            if (!this.qordialAuthStore.username) {
+                return false
+            }
+
+            // current user can reopen IFF:
+            // - ticket is closed or rejected
+            // - ticket is owned by current user
+            if (['closed', 'rejected'].includes(this.ticket.status)
+                && this.qordialAuthStore.username == this.ticket.qdn_name) {
+                return true
+            }
+
+            return false
+        },
+
+        editSaveDisabled() {
+            if (!this.editSubject) {
+                return true
+            }
+            if (!this.editDescription) {
+                return true
             }
             return false
         },
@@ -66,14 +161,20 @@ export default {
             this.loading = false
         },
 
-        acceptTicket() {
-            alert('accepting')
+        async refreshTicket() {
+            this.ticket = null
+            await this.setTicket()
         },
 
-        async rejectTicket() {
-            this.rejecting = true
+        async launchApp(appname) {
+            await qortalRequest({
+                action: 'OPEN_NEW_TAB',
+                qortalLink: `qortal://APP/${appname}`,
+            })
+        },
 
-            let ticket = {
+        copyTicket() {
+            return {
                 appname: this.ticket.appname,
                 ticket_type: this.ticket.ticket_type,
                 first_submitted_by: this.ticket.first_submitted_by,
@@ -82,14 +183,40 @@ export default {
                 description: this.ticket.description,
                 ticket_id: this.ticket.ticket_id,
                 version: this.ticket.version,
-                status: 'rejected',
+            }
+        },
+
+        async acceptTicket() {
+            this.accepting = true
+            await this.updateTicket('accepted', () => {
+                this.accepting = false
+            })
+        },
+
+        async editTicketInit() {
+            this.editSubject = this.ticket.subject
+            this.editDescription = this.ticket.description
+            this.editShowDialog = true
+        },
+
+        async editTicketSave() {
+            this.editSaving = true
+
+            let ticket = this.copyTicket()
+            ticket.subject = this.editSubject
+            ticket.description = this.editDescription
+            ticket.status = this.ticket.status
+
+            if (await this.publishTicket(ticket, this.ticket.qdn_identifier)) {
+                this.editShowDialog = false
             }
 
-            // publish rejected ticket to QDN
-            let identifier = this.ticket.raw_identifier.replace('APPQC_', 'APPQCZ_')
-            let response
+            this.editSaving = false
+        },
+
+        async publishTicket(ticket, identifier) {
             try {
-                response = await qortalRequest({
+                return await qortalRequest({
                     action: 'PUBLISH_QDN_RESOURCE',
                     name: this.qordialAuthStore.username,
                     service: 'DOCUMENT',
@@ -115,13 +242,51 @@ export default {
                     // TODO: so for now we just do this instead
                     alert(`ERROR\n\n${error?.error || error.toString()}`)
                 }
+            }
+        },
 
-                // in any case, abort on error
-                this.rejecting = false
-                return
+        async updateTicket(status, wrapup) {
+            let ticket = this.copyTicket()
+            ticket.status = status
+
+            // nb. original ticket identifier is like APPQC_xxx
+            let identifier = this.ticket.qdn_identifier
+
+            // sometimes we will update the original ticket, but
+            // other times we will create a new ticket master.
+            // so the identifier we use here will reflect that.
+            if (this.qordialAuthStore.username != this.ticket.qdn_name) {
+                let prefix = (status == 'rejected') ? 'APPQCZ_' : 'APPQCX_'
+                identifier = identifier.replace('APPQC_', prefix)
+            }
+
+            this.publishTicket(ticket, identifier)
+            if (wrapup) {
+                wrapup()
             }
 
             this.$router.push(`/tickets/${this.qordialAuthStore.username}/${identifier}`)
+        },
+
+        async closeTicket() {
+            this.closing = true
+            await this.updateTicket('closed', () => {
+                this.closing = false
+            })
+        },
+
+        async rejectTicket() {
+            this.rejecting = true
+            await this.updateTicket('rejected', () => {
+                this.rejecting = false
+            })
+        },
+
+        async reopenTicket() {
+            this.reopening = true
+            await this.updateTicket('accepted', () => {
+                this.reopening = false
+            })
         },
     },
 }
@@ -159,7 +324,9 @@ export default {
 
       <o-field grouped>
         <o-field label="App Name">
-          <span>{{ ticket.appname }}</span>
+          <a href="#" @click.prevent="launchApp(ticket.appname)">
+            {{ ticket.appname }}
+          </a>
         </o-field>
         <!-- TODO: should record this in the initial feedback json -->
         <!-- <o-field label="App Route"> -->
@@ -174,6 +341,20 @@ export default {
         <o-field label="Submitted By">
           <pretty-name :value="ticket.first_submitted_by" />
         </o-field>
+        <div class="buttons"
+             style="margin-left: 2rem;">
+          <o-button variant="primary"
+                    @click="refreshTicket()"
+                    icon-left="redo">
+            Refresh Ticket
+          </o-button>
+          <o-button v-if="canEditTicket"
+                    variant="primary"
+                    @click="editTicketInit()"
+                    icon-left="edit">
+            Edit Ticket
+          </o-button>
+        </div>
       </o-field>
 
       <div class="block"
@@ -194,24 +375,78 @@ export default {
       </div>
 
       <div class="block"
-           style="border: 1px solid gray; padding: 1rem;">
+           style="border: 1px solid gray; padding: 1rem; white-space: pre;">
         {{ ticket.description }}
       </div>
 
-      <div v-if="allowAcceptReject"
-           class="block buttons">
-        <o-button variant="primary"
+      <div class="block buttons">
+        <o-button v-if="canAcceptTicket"
+                  variant="primary"
                   @click="acceptTicket()"
-                  icon-left="check">
-          Accept Ticket
+                  icon-left="check"
+                  :disabled="accepting">
+          {{ accepting ? "Working, please wait..." : "Accept Ticket" }}
         </o-button>
-        <o-button variant="warning"
+        <o-button v-if="canCloseTicket"
+                  variant="primary"
+                  @click="closeTicket()"
+                  icon-left="check"
+                  :disabled="closing">
+          {{ closing ? "Working, please wait..." : "Close Ticket" }}
+        </o-button>
+        <o-button v-if="canRejectTicket"
+                  variant="warning"
                   @click="rejectTicket()"
                   icon-left="ban"
                   :disabled="rejecting">
           {{ rejecting ? "Working, please wait..." : "Reject Ticket" }}
         </o-button>
+        <o-button v-if="canReopenTicket"
+                  variant="primary"
+                  @click="reopenTicket()"
+                  icon-left="check"
+                  :disabled="reopening">
+          {{ reopening ? "Working, please wait..." : "Re-open Ticket" }}
+        </o-button>
       </div>
+
+    <o-modal v-model:active="editShowDialog">
+      <div class="card">
+
+        <div class="card-header">
+          <div class="card-header-title">Edit Ticket</div>
+        </div>
+
+        <div class="card-content">
+
+          <o-field label="Subject">
+            <o-input v-model.trim="editSubject" />
+          </o-field>
+
+          <o-field label="Description">
+            <o-input v-model="editDescription"
+                     type="textarea" />
+          </o-field>
+
+        </div>
+
+        <div class="card-footer">
+          <div class="card-footer-item buttons">
+
+            <o-button variant="primary"
+                      @click="editTicketSave()"
+                      icon-left="save"
+                      :disabled="editSaveDisabled">
+              {{ editSaving ? "Working, please wait..." : "Save" }}
+            </o-button>
+
+            <o-button @click="editShowDialog = false">
+              Cancel
+            </o-button>
+          </div>
+        </div>
+      </div>
+    </o-modal>
 
     </div>
   </div>
