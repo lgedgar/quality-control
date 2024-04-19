@@ -375,7 +375,7 @@ export default {
       </div>
 
       <div class="block"
-           style="border: 1px solid gray; padding: 1rem; white-space: pre;">
+           style="border: 1px solid gray; padding: 1rem; white-space: pre-wrap;">
         {{ ticket.description }}
       </div>
 
