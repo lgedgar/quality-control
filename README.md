@@ -1,6 +1,6 @@
-# qordial-vue-skeleton
+# quality-control
 
-This is a simple starting point for new Q-Apps built with qordial+Vue.
+App Feedback Manager for Qortal
 
 ## Running in Dev Mode
 
