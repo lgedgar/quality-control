@@ -5,8 +5,8 @@ var appsettings = {
     appTitle: packageData.name,
     appVersion: packageData.version,
     appDependencies: packageData.dependencies,
-    appRepository: null,        // github etc. URL here
-    appMaintainer: 'Your Name Here',
+    appRepository: "https://github.com/lgedgar/quality-control",
+    appMaintainer: 'edbob',
 };
 
 export default appsettings;
