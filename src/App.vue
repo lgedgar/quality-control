@@ -64,7 +64,7 @@ export default {
 
       <h1 class="is-size-1"
           style="flex-grow: 1;">
-        <router-link to="/">{{ appsettings.appTitle }}</router-link>
+        <router-link to="/tickets/">{{ appsettings.appTitle }}</router-link>
       </h1>
 
       <a v-if="!darkMode"
