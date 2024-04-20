@@ -87,8 +87,8 @@ export default {
 
             // current user can reject IFF:
             // - ticket is owned by current user
-            // - ticket is unconfirmed
-            if (this.ticket.status == 'unconfirmed'
+            // - ticket is still open
+            if (['unconfirmed', 'accepted'].includes(this.ticket.status)
                 && this.qordialAuthStore.username == this.ticket.qdn_name) {
                 return true
             }
